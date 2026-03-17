@@ -123,6 +123,7 @@ Always read the relevant SKILL.md before doing any task. Never answer from memor
 - **Model selection:** In AUTO mode, always prefer the latest Claude Sonnet or Opus (claude-sonnet-4-5 / claude-opus-4-5 or newer). Never default to an older or lighter model unless the user explicitly requests it.
 - **Excel / xlsx files:** Never operate on raw .xlsx for data tasks. First convert: use CSV for files < 50 MB, Parquet for files ≥ 50 MB. Write a helper script to do the conversion, then work on the converted file.
 - **Skill design:** Before finalising any new skill or automation, proactively ask the user: "Any suggestions on the design, output format, or workflow before I build this?" Always leave space for their input.
+- **Planning first:** Before executing ANY task — especially skill creation, file edits, automations, or multi-step workflows — always switch to Plan mode. Present the approach, confirm with the user, then act. Never jump straight to implementation.
 ```
 
 Leave `[USER_EMAIL]` and `[USER_PHONE]` as placeholders — these are filled in Phase 4.

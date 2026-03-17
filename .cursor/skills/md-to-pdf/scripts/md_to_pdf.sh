@@ -176,6 +176,7 @@ echo "→ Rendering PDF..."
   --no-sandbox \
   --print-to-pdf="$OUTPUT" \
   --print-to-pdf-no-header \
+  --no-pdf-header-footer \
   "file://$TMPHTML" \
   2>/dev/null
 
