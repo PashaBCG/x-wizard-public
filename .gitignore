@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+
+# Environment / credentials
+.env
+.env.local
+*.env
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Cursor / editor
+.cursor/cache/
+
+# Outputs (local only — don't commit generated files)
+*.pdf
+*.pptx
+
+# Temp
+tmp/
+temp/
+*.tmp

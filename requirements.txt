@@ -1,0 +1,6 @@
+# X-Wizard — Python dependencies
+# Installed automatically when you run /start in Cursor
+
+pandas          # data processing
+openpyxl        # Excel file support
+pywin32         # Outlook integration on Windows (ignored on Mac)
