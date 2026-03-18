@@ -27,11 +27,24 @@ Open with this message verbatim:
 
 ---
 
+```
+██╗  ██╗      ██╗    ██╗██╗███████╗ █████╗ ██████╗ ██████╗
+╚██╗██╔╝      ██║    ██║██║╚════██║██╔══██╗██╔══██╗██╔══██╗
+ ╚███╔╝ █████╗██║ █╗ ██║██║    ██╔╝███████║██████╔╝██║  ██║
+ ██╔██╗ ╚════╝██║███╗██║██║   ██╔╝ ██╔══██║██╔══██╗██║  ██║
+██╔╝ ██╗      ╚███╔███╔╝██║███████╗██║  ██║██║  ██║██████╔╝
+╚═╝  ╚═╝       ╚══╝╚══╝ ╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝
+
+           ✦  Forged by Pasha Barbashin  ✦
+```
+
 **Welcome to X-Wizard.**
 
 I'm your setup guide. I'll get you ready in about 5 minutes — no technical knowledge needed. Just answer a few questions and I'll handle the rest.
 
 X-Wizard turns Cursor into a personal automation assistant. Once set up, you can:
+– Talk to your Excels/Tableau datasets in plain English
+– Create PDF/XLSX from your outputs (PPTX too, but you need to ask Pasha for this skill)
 - Draft and send emails in plain English — with your signature auto-applied
 - Export any document to a BCG-branded PDF with one command
 - Build custom automations for tasks you repeat every week — no code required
@@ -47,24 +60,38 @@ Then ask the following questions using the AskQuestion tool where available, or 
 
 **Q2 — Role** (use AskQuestion with these options)
 > "What best describes your role?"
-- Partner / MDP
-- Principal / Project Leader
+- MDP / COO / Executive Role
+- Partner / Principal / Project Leader
 - Consultant / Associate
-- Operations / Finance / Analytics
+- BST / Operations / Finance / Analytics
 - Other
 
 **Q3 — AI Fluency** (use AskQuestion with these options)
 > "How would you describe your experience with AI tools?"
-- I use ChatGPT or Microsoft Copilot for writing help
-- I use GPT Projects, custom GPTs, or connectors
-- I use Claude, Cowork, or AI plugins regularly
-- I work with Claude Code, Cursor, or build AI workflows
-- I am something of an AI wizard myself
+- L1: I use ChatGPT or Microsoft Copilot for writing help
+- L2: I use GPT Projects, custom GPTs, or connectors
+- L3: I use Claude, Cowork, or AI plugins regularly
+- L4: I work with Claude Code, Cursor, or build AI workflows
+- L5: I am something of an AI wizard myself
+
+**Q4 — Repeating workflows** (use AskQuestion, multi-select enabled)
+> "Which of these sounds like something you do regularly? Select all that apply."
+- I query or summarize an Excel / data file
+- I send routine emails — updates, reports, client notes
+- I compile data from multiple sources into a report or deck
+- I export documents to PDF or share formatted summaries
+- I use Tableau or Snowflake dashboards to track live data
+- None of these — I have something else in mind
+
+If the user selects **Tableau or Snowflake**, acknowledge it immediately:
+> "Tableau and Snowflake connectors are available but require a separate setup — Pasha can send instruction to you directly if relevant. Reach out on Slack: **@pasha.barbashin**."
+> Then continue onboarding normally.
 
 Store internally:
 - `USER_NAME` = Q1 answer
 - `USER_ROLE` = Q2 answer
 - `AI_LEVEL` = 1–5 (map from Q3 answer top-to-bottom)
+- `USER_WORKFLOWS` = list of Q4 selections
 
 ---
 
@@ -255,7 +282,76 @@ Deliver this message, adapting detail level to AI_LEVEL:
 
 ---
 
-## Phase 6 — Handoff
+## Phase 6 — First Skill (optional, based on Q4)
+
+After the capabilities recap, offer to build a first skill right now — tailored to what the user said in Q4. This phase runs a short guided interview (one question at a time, conversationally) before handing off to `create-skill`.
+
+**CRITICAL:** Ask questions one at a time. Never dump all questions at once. Wait for each answer before asking the next.
+
+---
+
+### If "Excel / data file" selected:
+
+Ask:
+> "Want to build your first skill right now? It takes about 2 minutes — and it'll be built around your actual workflow, not a generic template."
+
+If yes, run this interview one question at a time:
+1. "Which dataset or file do you go back to most often? Give it a name or describe what it tracks."
+2. "Where is it stored on your laptop? (e.g. `/Documents/Data/headcount.xlsx`)"
+3. "Which columns or fields are the most important — and what do they mean in plain English?"
+4. "What questions do you usually answer with this file? Give me 2–3 examples."
+5. "What does your usual output look like? (e.g. a bullet summary in chat, an email, a new Excel export, a PDF)"
+
+Then say: "Got it — I'll build a skill around that." → read `.cursor/skills/create-skill/SKILL.md` and launch the skill creation flow in this same chat, pre-loading the five answers as context. The skill name comes from what the user described in step 1 (e.g. `visa-tracker`, `headcount-summary`) — never a generic label.
+
+---
+
+### If "Routine emails" selected:
+
+Ask:
+> "Want to build your first skill right now? I'll set it up around one of your specific email routines."
+
+If yes, run this interview one question at a time:
+1. "Which email do you send most often? Describe it in one sentence — e.g. 'weekly project status to the client team'."
+2. "Who are the recipients — is it always the same people, or does it vary?"
+3. "What stays the same every time you send it? (subject line, structure, sign-off)"
+4. "What changes each time — and how do you decide what to put there? (manual input, a data file, a calendar event, etc.)"
+5. "Should X-Wizard draft it for your review, or send it directly once ready?"
+
+Then confirm and read `.cursor/skills/create-skill/SKILL.md` to launch skill creation in this chat. Skill name from step 1 (e.g. `weekly-client-status`, `ncc-update-email`).
+
+---
+
+### If "Report/deck compilation" or "PDF export" selected:
+
+Ask:
+> "Want to build your first skill right now? Let's make one for your most repeated reporting task."
+
+If yes, run this interview one question at a time:
+1. "What report do you compile most often? What's it called and who receives it?"
+2. "Where does the data come from — Excel file, emails, a shared folder, manual input?"
+3. "What does the output look like — a Word doc, PDF, PowerPoint, an email?"
+4. "How often do you do this — weekly, monthly, ad hoc?"
+
+Then confirm and launch `create-skill` with context pre-loaded.
+
+---
+
+### If "None of these / something else" selected:
+
+> "No problem — you can always build a custom skill for your specific workflow. Open a new chat and type `/create-skill`. Or tell me right now what you'd like to automate and we'll start here."
+
+If the user describes something, run a short free-form interview: where the inputs come from, what the output is, how often they do it. Then launch `create-skill`.
+
+---
+
+### If the user says no / not now:
+
+Proceed directly to Phase 7 (Handoff).
+
+---
+
+## Phase 7 — Handoff
 
 End with this message (adapt phrasing to AI_LEVEL, but always include these elements):
 
@@ -285,4 +381,4 @@ End with this message (adapt phrasing to AI_LEVEL, but always include these elem
 >
 > Reach out to [barbashin.pasha@bcg.com](mailto:barbashin.pasha@bcg.com) to get access to the extended skills library."
 
-**After delivering the handoff message, this skill is complete. Do not respond to further questions in this chat — redirect to opening a new chat.**
+**After delivering the handoff message, this skill is complete. Do not respond to further questions in this chat — redirect to opening a new chat (unless Phase 6 skill creation is still in progress, in which case complete it first).**

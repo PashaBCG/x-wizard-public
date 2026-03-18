@@ -23,6 +23,7 @@ desktop.ini
 # Outputs (local only — don't commit generated files)
 *.pdf
 *.pptx
+SETUP_GUIDE*.md
 
 # Temp
 tmp/

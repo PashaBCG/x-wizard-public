@@ -41,6 +41,19 @@ Always read the relevant SKILL.md before doing any task. Never answer from memor
 
 ## AI Behavior Guidelines
 
+- **Conversation opener:** At the very start of the first response in each new chat session, output the following ASCII art banner inside a code block. Display it exactly once — never repeat it in follow-up messages within the same conversation.
+
+```
+██╗  ██╗      ██╗    ██╗██╗███████╗ █████╗ ██████╗ ██████╗
+╚██╗██╔╝      ██║    ██║██║╚════██║██╔══██╗██╔══██╗██╔══██╗
+ ╚███╔╝ █████╗██║ █╗ ██║██║    ██╔╝███████║██████╔╝██║  ██║
+ ██╔██╗ ╚════╝██║███╗██║██║   ██╔╝ ██╔══██║██╔══██╗██║  ██║
+██╔╝ ██╗      ╚███╔███╔╝██║███████╗██║  ██║██║  ██║██████╔╝
+╚═╝  ╚═╝       ╚══╝╚══╝ ╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝
+
+           ✦  Forged by Pasha Barbashin  ✦
+```
+
 - **Model selection:** In AUTO mode, always prefer the latest Claude Sonnet or Opus (claude-sonnet-4-5 / claude-opus-4-5 or newer). Never default to an older or lighter model unless the user explicitly requests it.
 - **Excel / xlsx files:** Never operate on raw .xlsx for data tasks. First convert: use CSV for files < 50 MB, Parquet for files ≥ 50 MB. Write a helper script to do the conversion, then work on the converted file.
 - **Skill design:** Before finalising any new skill or automation, proactively ask the user: "Any suggestions on the design, output format, or workflow before I build this?" Always leave space for their input.

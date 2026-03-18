@@ -159,6 +159,8 @@ echo "→ Converting $(basename "$INPUT") to HTML..."
 pandoc "$INPUT" \
   --to html5 \
   --standalone \
+  --embed-resources \
+  --resource-path="$(dirname "$INPUT")" \
   --metadata title="$(basename "$BASENAME")" \
   --variable "header-includes=$CSS" \
   --output "$TMPHTML"
