@@ -84,7 +84,7 @@ Then ask the following questions using the AskQuestion tool where available, or 
 - None of these — I have something else in mind
 
 If the user selects **Tableau or Snowflake**, acknowledge it immediately:
-> "Tableau and Snowflake connectors are available but require a separate setup — Pasha can send instruction to you directly if relevant. Reach out on Slack: **@pasha.barbashin**."
+> "Great — X-Wizard can connect to Tableau and Snowflake. After setup is complete, open a new chat and mention your dashboard or dataset. I'll guide you through getting access and configuring the connection step by step."
 > Then continue onboarding normally.
 
 Store internally:
@@ -137,6 +137,7 @@ Always read the relevant SKILL.md before doing any task. Never answer from memor
 | Draft or send an email | `.cursor/skills/outlook-draft/SKILL.md` |
 | Export any .md file to PDF | `.cursor/skills/md-to-pdf/SKILL.md` |
 | Build a new custom skill | `.cursor/skills/create-skill/SKILL.md` |
+| Work with data — Excel, Tableau, Snowflake, dashboards, or datasets | `.cursor/skills/data-advisor/SKILL.md` |
 | First-time setup or re-onboarding | `.cursor/skills/start/SKILL.md` |
 
 ## Output Standards
@@ -148,7 +149,7 @@ Always read the relevant SKILL.md before doing any task. Never answer from memor
 
 ## AI Behavior Guidelines
 - **Model selection:** In AUTO mode, always prefer the latest Claude Sonnet or Opus (claude-sonnet-4-5 / claude-opus-4-5 or newer). Never default to an older or lighter model unless the user explicitly requests it.
-- **Excel / xlsx files:** Never operate on raw .xlsx for data tasks. First convert: use CSV for files < 50 MB, Parquet for files ≥ 50 MB. Write a helper script to do the conversion, then work on the converted file.
+- **Data sources:** When the user works with Excel files, Tableau, Snowflake, dashboards, datasets, or any data source — read `.cursor/skills/data-advisor/SKILL.md` first. For Excel: never query raw .xlsx directly for data analysis — the skill guides conversion to CSV (< 20 MB) or Parquet (>= 20 MB) before querying. The Excel MCP is fine for simple lookups and formatting, but analytical queries must use the converted file. For Tableau/Snowflake: do not attempt to query external data without a configured skill.
 - **Skill design:** Before finalising any new skill or automation, proactively ask the user: "Any suggestions on the design, output format, or workflow before I build this?" Always leave space for their input.
 - **Planning first:** Before executing ANY task — especially skill creation, file edits, automations, or multi-step workflows — always switch to Plan mode. Present the approach, confirm with the user, then act. Never jump straight to implementation.
 ```
@@ -231,6 +232,73 @@ Read `~/.cursor/mcp.json` (create if missing). Merge the following entry into `m
 
 Then tell the user:
 > "Excel MCP is configured. Cursor can now read, write, and analyse your .xlsx files directly. **Restart Cursor once setup is complete** for the MCP to activate."
+
+---
+
+**Step 3d — Install PowerPoint MCP for Cursor:**
+
+Tell the user:
+> "I'll now set up the PowerPoint MCP — this lets me create, edit, and build full .pptx slide decks directly inside Cursor."
+
+**Sub-step 1 — Create a Python virtual environment for the PowerPoint MCP:**
+
+- **Mac:**
+  ```bash
+  python3 -m venv ~/.cursor/mcp-envs/powerpoint
+  ```
+
+- **Windows (PowerShell):**
+  ```powershell
+  python -m venv "$env:USERPROFILE\.cursor\mcp-envs\powerpoint"
+  ```
+
+**Sub-step 2 — Install the PowerPoint MCP server package:**
+
+- **Mac:**
+  ```bash
+  ~/.cursor/mcp-envs/powerpoint/bin/pip install office-powerpoint-mcp-server
+  ```
+
+- **Windows (PowerShell):**
+  ```powershell
+  & "$env:USERPROFILE\.cursor\mcp-envs\powerpoint\Scripts\pip.exe" install office-powerpoint-mcp-server
+  ```
+
+Wait for the install to complete before proceeding.
+
+**Sub-step 3 — Determine the Python binary path:**
+
+- **Mac:** Run:
+  ```bash
+  echo "$HOME/.cursor/mcp-envs/powerpoint/bin/python3"
+  ```
+  Capture the printed path (e.g. `/Users/jsmith/.cursor/mcp-envs/powerpoint/bin/python3`).
+
+- **Windows:** Run:
+  ```powershell
+  echo "$env:USERPROFILE\.cursor\mcp-envs\powerpoint\Scripts\python.exe"
+  ```
+  Capture the printed path (e.g. `C:\Users\jsmith\.cursor\mcp-envs\powerpoint\Scripts\python.exe`).
+
+Never use `~` or environment variables in the mcp.json value — always use the full expanded absolute path.
+
+**Sub-step 4 — Register PowerPoint MCP in Cursor:**
+
+Read `~/.cursor/mcp.json`. Merge the following entry into `mcpServers`, replacing `PYTHON_PATH` with the full path captured above, preserving any existing entries, then write the file back:
+
+```json
+{
+  "mcpServers": {
+    "powerpoint": {
+      "command": "PYTHON_PATH",
+      "args": ["-m", "ppt_mcp_server"]
+    }
+  }
+}
+```
+
+Then tell the user:
+> "PowerPoint MCP is configured. Cursor can now create, read, and edit .pptx slide decks directly. **Restart Cursor once setup is complete** for the MCP to activate."
 
 ---
 
