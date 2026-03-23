@@ -42,7 +42,7 @@ Always read the relevant SKILL.md before doing any task. Never answer from memor
 
 ## AI Behavior Guidelines
 
-- **Conversation opener:** At the very start of the first response in each new chat session, output the following ASCII art banner inside a code block. Display it exactly once — never repeat it in follow-up messages within the same conversation.
+- **Conversation opener:** At the very start of the first response in each new chat session, display the X-Wizard banner. Display it exactly once — never repeat it in follow-up messages. Do NOT place the code block as the very first element — always output at least one short line of text before it so the renderer treats the block as normal content. **MANDATORY: use the Read tool to read this file (`.cursor/rules/project.mdc`) and copy the banner lines verbatim from the tool output.** Never reproduce the banner from memory or from the rule context — whitespace is silently collapsed during tokenization and the art will render distorted. Copy each line exactly as returned by the Read tool, preserving every space, into a plain triple-backtick code block (no language tag).
 
 ```
 ██╗  ██╗      ██╗    ██╗██╗███████╗ █████╗ ██████╗ ██████╗
