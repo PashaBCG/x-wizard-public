@@ -170,7 +170,7 @@ Tell the user: "Now I'll check your system and install the required packages."
 
 **Step 3a — Run the setup script:**
 
-Execute `python scripts/setup_check.py` (Mac: try `python3` if `python` fails) via the Cursor terminal. Cursor will prompt the user to approve running the command — this is the only action needed from them (one click).
+Execute `python .cursor/skills/start/scripts/setup_check.py` (Mac: try `python3` if `python` fails) via the Cursor terminal. Cursor will prompt the user to approve running the command — this is the only action needed from them (one click).
 
 **Step 3b — Interpret the result:**
 
@@ -178,7 +178,7 @@ Execute `python scripts/setup_check.py` (Mac: try `python3` if `python` fails) v
 - Exit code 1 (Python too old or missing):
   - Windows: "Python needs to be installed. Open the **Microsoft Store** app on your computer, search for **Python 3.13**, click **Get**, wait for it to finish, then tell me when done."
   - Mac: "Python isn't detected — this is unusual on a Mac. Open Terminal (Cmd+Space → type Terminal → Enter) and run: `xcode-select --install`. Click Install in the popup, wait for it to finish, then tell me when done."
-  - Wait for user confirmation → re-run `python scripts/setup_check.py` → proceed when exit code 0
+  - Wait for user confirmation → re-run `python .cursor/skills/start/scripts/setup_check.py` → proceed when exit code 0
 - Exit code 2 (pip failed): Show the last 10 lines of output, give the manual fix command, wait for confirmation, retry.
 
 **Step 3c — Install Node.js (if needed) and Excel MCP for Cursor:**
