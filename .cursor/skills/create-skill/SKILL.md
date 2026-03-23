@@ -72,7 +72,7 @@ Create the skill under `.cursor/skills/[skill-name]/`:
 ```
 [skill-name]/
 ├── SKILL.md          # required
-├── reference.md      # optional — detailed docs the agent reads on demand
+├── reference.md      # optional — detailed docs the agent reads on demand to de-bloat the SKILL file
 └── scripts/          # optional — Python or shell helpers
     └── [name].py
 ```
@@ -133,7 +133,7 @@ Pre-written scripts are preferred over having the agent generate code on the fly
 
 ### Excel skill requirements (apply when data source is an Excel file)
 
-When building a skill that reads an Excel file, the skill MUST include all of the following:
+When building a skill that reads an Excel file, the skill MUST include all of the following. For conversion logic, extraction script templates, query patterns, and the two-wave workflow, follow `.cursor/skills/data-advisor/reference.md` — it is the single source of truth for Excel data handling.
 
 **1. File verification**
 The skill's first step on any run must verify the file is accessible:
@@ -142,24 +142,19 @@ The skill's first step on any run must verify the file is accessible:
 - Never silently proceed with a missing file
 
 **2. Schema reference in `reference.md`**
-Create (or update) `reference.md` with a confirmed column schema:
+Create (or update) the skill's `reference.md` with a confirmed column schema:
 - Column name | Example values | Plain-English meaning
-- Source: use the schema from the onboarding scan (passed in `CONTEXT FROM ONBOARDING`) if available, or discover it now by scanning the file
-- If discovered now: use the fallback scan script at `.cursor/skills/create-skill/scripts/scan_excel.py` — run it via the terminal, parse the JSON output, and embed the schema in `reference.md`
+- Source: use the schema from the context block (`CONTEXT FROM DATA ADVISOR` or `CONTEXT FROM ONBOARDING`) if available, or discover it now using the scan script at `.cursor/skills/data-advisor/scripts/scan_excel.py`
 
 **3. Data query script: `scripts/query_data.py`**
-Create a Python script that converts the Excel file to an analysis-ready format before any query:
-- Check file size first: `os.path.getsize(file_path)`
-  - Under 20 MB → convert to CSV (written to a temp file, cleaned up after the run)
-  - 20 MB or larger → convert to Parquet (same temp lifecycle)
-- Use pandas for the conversion: `pd.read_excel()` → `df.to_csv()` or `df.to_parquet()`
-- The script accepts the file path and sheet name as arguments
-- After conversion, run the user's query against the temp file using pandas
-- Temp files are deleted after the result is returned unless the user explicitly asks to keep them
+Create a Python script following the extraction template and query patterns in `.cursor/skills/data-advisor/reference.md`. The script must:
+- Convert the Excel file to CSV (under 20 MB) or Parquet (20 MB+) before querying
+- Accept the file path and sheet name as arguments
+- Clean up temp files after the result is returned
 
 **4. Mandatory test run (Step 4 — non-optional for Excel skills)**
 After writing all files:
-1. Run `scripts/scan_excel.py` or the Excel MCP to confirm the file opens without error
+1. Run `.cursor/skills/data-advisor/scripts/scan_excel.py` or the Excel MCP to confirm the file opens without error
 2. Run `scripts/query_data.py` with one of the example questions from the context — confirm it executes and returns a result
 3. Present the result to the user and ask: "Does this look right? Is this the kind of output you'd expect?"
 4. Iterate if needed. Do not declare the skill complete until the user confirms the output is correct.

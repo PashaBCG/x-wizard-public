@@ -1,5 +1,5 @@
 """
-scan_excel.py — Lightweight Excel file scanner for X-Wizard skill creation.
+scan_excel.py — Lightweight Excel file scanner for X-Wizard data discovery.
 
 Usage:
     python scan_excel.py <file_path> [--rows 20] [--sheet <sheet_name>]
@@ -29,8 +29,8 @@ Exit codes:
     3 = read error (file locked, corrupt, etc.)
 
 This script is used as a fallback when the Excel MCP is unavailable.
-It is shared across the create-skill and start skills.
-Reference: .cursor/skills/create-skill/scripts/scan_excel.py
+It is referenced by data-advisor, create-skill, and start skills.
+Reference: .cursor/skills/data-advisor/scripts/scan_excel.py
 """
 
 import sys

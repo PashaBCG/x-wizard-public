@@ -371,71 +371,12 @@ Do NOT re-ask what they want to build — they just clicked it. Lead directly in
 
 ### If "Excel / data file" selected:
 
-Go straight into Q1:
-> "Which file do you go back to most often? Give it a name or describe what it tracks."
->
-> *(e.g. "headcount tracker — one row per person, monthly updates, offices and grades")*
+**Delegate to data-advisor.** The data-advisor skill handles file setup, conversion, scanning, and schema confirmation for all data sources — including Excel.
 
-Run this interview one question at a time:
-
-**Q1:** "Which dataset or file do you go back to most often? Give it a name or describe what it tracks."
-
-**Q2:** "Where is it stored on your laptop?"
-
-> Tip to share with the user: To get the exact path quickly —
-> - **Mac:** Right-click the file in Finder → hold Option → click "Copy ... as Pathname"
-> - **Windows:** Shift + right-click the file → "Copy as path"
-> Or just describe where it is (e.g. "OneDrive, Reports folder") and I'll ask you to paste the path when I need it.
-
-**After Q2 — proactive file scan (do this before asking any column questions):**
-
-1. Use the Excel MCP tool to open the file and list all sheet names.
-2. Identify the most likely raw-data tab: look for the sheet with the most rows and structured column headers (avoid sheets named "Summary", "Cover", "Chart", etc.).
-3. Read the first 10–20 rows of that tab to capture column headers and representative sample values.
-4. Present your findings conversationally — not as a rigid table:
-
-   > "Here's what I found in your file:
-   >
-   > - **Sheet:** `Data` (523 rows)
-   > - **Columns:** Office (London, NYC, Boston) · Grade (C, A, JC) · Status (Active, Departing) · Start Date · Cost Centre
-   > - **My read:** Office = location, Grade = seniority level, Status = employment state — the others I'm less sure about.
-   >
-   > Does that look right? Anything I've labelled wrong, or columns with a specific meaning I should know?"
-
-5. Based on what the scan reveals, generate **tailored** follow-up questions specific to this file — do not fall back to generic templates. Examples of tailored questions:
-   - If there's a `Status` column with multiple values: "Which Status values matter to you — all of them, or just Active?"
-   - If there's a date column: "Do you usually look at this data for a specific time period, or the latest snapshot?"
-   - If columns are ambiguous (e.g. `Col_A`, `Metric_2`): "Can you tell me what `Col_A` represents?"
-   - Use AskQuestion for questions that have a clear set of options.
-
-6. If the Excel MCP is unavailable (failed to install in Phase 3), fall back to running `.cursor/skills/create-skill/scripts/scan_excel.py <file_path>` in the terminal. This script does the same lightweight scan and prints results as JSON.
-
-7. Store the confirmed schema as `FILE_SCHEMA` for use in the create-skill context block.
-
-**Q3 (only if scan fails completely):** "Which columns or fields are the most important — and what do they mean in plain English? (e.g. 'Status = whether they're currently active or not')"
-
-**Q4:** "What questions do you usually answer with this file? Give me 2–3 examples — write them like you'd ask a colleague."
-
-**Q5:** "What does your usual output look like? (e.g. a bullet summary in chat, an email, a new Excel export, a PDF)"
-
-Then say: "Got it — I'll build a skill around that."
-
-**Handoff steps (execute in order):**
-1. Use the Read tool to read `.cursor/skills/create-skill/SKILL.md` — announce: "Reading the skill-creation guide now..."
-2. Compile the interview answers into a named context block:
-   ```
-   --- CONTEXT FROM ONBOARDING ---
-   File/dataset: [answer to Q1]
-   File path: [answer to Q2]
-   Schema: [FILE_SCHEMA from scan, or column descriptions from Q3]
-   Example questions: [answer to Q4]
-   Output format: [answer to Q5]
-   Skill name candidate: [derived from Q1, e.g. visa-tracker, headcount-summary — never a generic label]
-   ---
-   ```
-3. Skip create-skill's Step 1 (requirements already gathered) — jump directly to Step 2 (Design). Present the design summary and ask for confirmation before writing any files.
-4. After writing skill files, run a test: execute the skill against one of the user's example questions from Q4. Do not hand off until the user confirms the output is correct.
-5. Once the user confirms it works, deliver the context bloat note and proceed to Phase 7:
+1. Read `.cursor/skills/data-advisor/SKILL.md` and execute **Phase 3E only**. The user has already indicated Excel in Phase 5, so skip data-advisor Phases 1–2 (detection and source identification).
+2. Phase 3E will guide the user through: file path collection, conversion to CSV/Parquet, schema scan and confirmation, tailored follow-up questions, example queries, output format, and Excel MCP verification.
+3. At the end of Phase 3E, the data-advisor hands off to create-skill automatically (Step 5). Follow that handoff — let create-skill design, build, and test the skill.
+4. After create-skill completes and the user confirms the test run is correct, deliver the context bloat note and proceed to Phase 7:
    > 🧹 **One more thing:** This chat has been carrying your full onboarding session. For best results with your new skill, open a fresh chat — Mac: `Cmd+N` / Windows: `Ctrl+N`.
    >
    > A fresh chat loads only your skill, not all of this context. Think of it like a clean browser tab vs one with 50 pages open — faster, more focused responses.

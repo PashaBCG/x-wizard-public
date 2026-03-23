@@ -145,9 +145,12 @@ Then generate **tailored** follow-up questions based on the actual columns — n
 - If columns are ambiguous (e.g. `Col_A`, `Metric_2`): "Can you tell me what this represents?"
 - Use AskQuestion for questions with a clear set of options.
 
-Finally, ask: "What questions do you usually answer with this file? Give me 2–3 examples — write them like you'd ask a colleague."
+Then ask these two closing questions, one at a time:
 
-Store the confirmed schema and the user's answers for the handoff.
+1. "What questions do you usually answer with this file? Give me 2–3 examples — write them like you'd ask a colleague."
+2. "What should the output look like? (e.g. a bullet summary in chat, an email, a new Excel export, a PDF)"
+
+Store the confirmed schema, the user's example questions, and their output preference for the handoff.
 
 ### Step 4 — Confirm Excel MCP
 
@@ -173,12 +176,22 @@ Then tell the user to restart Cursor.
 Tell the user:
 > "Your data is ready. Now let's build a skill so you can query it anytime by just asking in plain English."
 
-Read `.cursor/skills/create-skill/SKILL.md` and launch the skill creation flow **in this same chat**, pre-loading:
-- Data source type: Excel (local file)
-- The converted file path (CSV or Parquet)
-- The confirmed column schema with types, sample values, and the user's plain-English descriptions from Step 3
-- The user's key questions and metrics from Step 3
-- Pointer to [reference.md](reference.md) for Excel query patterns
+**Handoff steps (execute in order):**
+1. Read `.cursor/skills/create-skill/SKILL.md`.
+2. Compile everything gathered in Steps 1–3 into a context block:
+   ```
+   --- CONTEXT FROM DATA ADVISOR ---
+   Data source: Excel (local file)
+   File path: [original .xlsx path from Step 1]
+   Converted file: [CSV or Parquet path from Step 2]
+   Schema: [confirmed column schema with types, sample values, and user's plain-English descriptions from Step 3]
+   Example questions: [user's key questions from Step 3]
+   Output format: [user's output preference from Step 3]
+   Skill name candidate: [derived from file description, e.g. headcount-tracker, pipeline-summary — never a generic label]
+   Reference: .cursor/skills/data-advisor/reference.md (Excel query patterns and extraction template)
+   ---
+   ```
+3. Skip create-skill's Step 1 (requirements already gathered) — jump directly to Step 2 (Design). Present the design summary and ask for confirmation before writing any files.
 
 **This skill is complete after the handoff. The create-skill flow takes over.**
 
