@@ -312,9 +312,9 @@ Tell the user:
 
 > "One more thing — I'll configure your email signature so it's ready when you send emails through X-Wizard."
 
-Ask:
-1. "What's your BCG email address?" (free text)
-2. "Phone number for your email signature?" (free text — or say 'skip' to leave blank)
+Ask one at a time:
+1. 📧 "What's your BCG email address?"
+2. 📱 "Phone number for your signature? (or say 'skip' to leave blank)"
 
 Update `.cursor/rules/project.mdc`:
 - Replace `[USER_EMAIL]` with the email provided
@@ -328,48 +328,55 @@ Also mention:
 
 ---
 
-## Phase 5 — Capabilities Recap
+## Phase 5 — Capabilities Recap + First Skill Lead-In
 
-Deliver this message, adapting detail level to AI_LEVEL:
+Keep this phase short. Land the "you're ready" moment, then immediately fire an AskQuestion for the user to select what to automate first. Do not dump a generic feature list.
 
-**For Level 1–2 (plain English):**
-> "You're all set, [USER_NAME]! Here's what you can do — just type naturally in plain English:
->
-> - **Email:** 'Draft an email to Sarah thanking her for the meeting' → I'll write it and open it in Outlook for you to review
-> - **PDF:** 'Save this document as a PDF' → I'll convert it to a BCG-branded PDF
-> - **Custom tools:** 'I want to automate my monthly reporting' → I'll build a custom skill just for you
->
-> No commands, no code — just describe what you need."
+**Deliver the recap (adapt to AI_LEVEL):**
 
-**For Level 3 (AI-fluent):**
-> "You're set, [USER_NAME]. Available out of the box:
-> - **Outlook skill** — draft and send emails with signature; contact resolution from history
-> - **md-to-pdf** — pandoc + Chrome headless → BCG dark-theme PDF
-> - **create-skill** — describe a workflow, I'll write the SKILL.md and any supporting scripts
->
-> All routed via project.mdc. Start a new chat and go."
+- Level 1–2: *"You're set up, [USER_NAME]. X-Wizard is ready — just describe what you need in plain English and I'll handle the rest. No commands, no code."*
+- Level 3: *"Setup complete. project.mdc written with your profile. Out of the box: Outlook drafting, md-to-pdf, create-skill — all routed via project.mdc."*
+- Level 4–5: *"Done. project.mdc configured. Skills: outlook-draft, md-to-pdf, create-skill. Edit project.mdc directly to extend."*
 
-**For Level 4–5 (builder/wizard):**
-> "Setup complete. project.mdc is written with your profile and communication style. Skills available: outlook-draft, md-to-pdf, create-skill. Run /create-skill in a new chat to build. project.mdc drives routing — edit it directly to add skills."
+**Immediately after — trigger AskQuestion:**
+
+> "Now let's build your first automation. What would you like to tackle first?"
+
+Show **only the options the user selected in Q4** — do not show options they didn't pick. Always add "Not now" at the end.
+
+| Q4 selection | AskQuestion option label |
+|---|---|
+| Excel / data file | "One of my Excel files — query or summarise data" |
+| Routine emails | "Routine emails — updates, reports, client notes" |
+| Report/deck compilation | "Report or deck compilation" |
+| PDF export | "PDF export — format and share documents" |
+| Tableau or Snowflake | "Tableau / Snowflake dashboard" |
+| None / something else | "Something else — I'll describe it" |
+
+Always add: **"Not now — I'll come back to this"**
+
+Once the user clicks, proceed immediately into the matching Phase 6 path below.
 
 ---
 
-## Phase 6 — First Skill (optional, based on Q4)
+## Phase 6 — First Skill Interview (based on Phase 5 selection)
 
-After the capabilities recap, offer to build a first skill right now — tailored to what the user said in Q4. This phase runs a short guided interview (one question at a time, conversationally) before handing off to `create-skill`.
+Do NOT re-ask what they want to build — they just clicked it. Lead directly into the first interview question. No preamble, no "great choice!" filler.
 
 **CRITICAL:** Ask questions one at a time. Never dump all questions at once. Wait for each answer before asking the next.
 
-**Reference for example answers:** `.cursor/skills/start/references/instructions-examples.md` — share this with the user if they seem unsure how to answer, or read it yourself to understand the expected level of detail. Do not paste the whole file at the user; pull out the one relevant example per question as a short inline hint.
+**Reference for example answers:** `.cursor/skills/start/references/instructions-examples.md` — read it yourself to calibrate expected detail. Pull one short inline hint per question only if the user seems unsure — never paste the whole file.
 
 ---
 
 ### If "Excel / data file" selected:
 
-Ask:
-> "Want to build your first skill right now? It takes about 2 minutes — and it'll be built around your actual workflow, not a generic template."
+Go straight into Q1:
+> "Which file do you go back to most often? Give it a name or describe what it tracks."
+>
+> *(e.g. "headcount tracker — one row per person, monthly updates, offices and grades")*
 
-If yes, run this interview one question at a time:
+Run this interview one question at a time:
 
 **Q1:** "Which dataset or file do you go back to most often? Give it a name or describe what it tracks."
 
@@ -429,20 +436,18 @@ Then say: "Got it — I'll build a skill around that."
 3. Skip create-skill's Step 1 (requirements already gathered) — jump directly to Step 2 (Design). Present the design summary and ask for confirmation before writing any files.
 4. After writing skill files, run a test: execute the skill against one of the user's example questions from Q4. Do not hand off until the user confirms the output is correct.
 5. Once the user confirms it works, deliver the context bloat note and proceed to Phase 7:
-   > **One more thing before you go:** This chat has been carrying your full onboarding session. For the best daily experience with your new skill, open a fresh chat — Mac: `Cmd+N` / Windows: `Ctrl+N`.
+   > 🧹 **One more thing:** This chat has been carrying your full onboarding session. For best results with your new skill, open a fresh chat — Mac: `Cmd+N` / Windows: `Ctrl+N`.
    >
    > A fresh chat loads only your skill, not all of this context. Think of it like a clean browser tab vs one with 50 pages open — faster, more focused responses.
-   >
-   > Just ask naturally: *"Show me headcount by office this month"* — X-Wizard finds and uses your skill automatically. No command needed.
 
 ---
 
 ### If "Routine emails" selected:
 
-Ask:
-> "Want to build your first skill right now? I'll set it up around one of your specific email routines."
+Go straight into Q1:
+> "Which email do you send most often? One sentence is enough — e.g. 'weekly project status to the client team'."
 
-If yes, run this interview one question at a time:
+Run this interview one question at a time:
 1. "Which email do you send most often? Describe it in one sentence — e.g. 'weekly project status to the client team'."
 2. "Who are the recipients — is it always the same people, or does it vary?"
 3. "What stays the same every time you send it? (subject line, structure, sign-off)"
@@ -467,16 +472,16 @@ Then say: "Got it — let me build that."
 3. Skip create-skill's Step 1 — jump directly to Step 2 (Design). Present the design summary and ask for confirmation before writing any files.
 4. After writing skill files, simulate a test run with a realistic example input. Do not hand off until the user confirms the draft looks right.
 5. Once confirmed, deliver the context bloat note and proceed to Phase 7:
-   > **One more thing:** This chat has been carrying your full onboarding session. Open a fresh chat for best results — Mac: `Cmd+N` / Windows: `Ctrl+N`. A fresh chat loads only your skill, not all of this context. Just describe what you need naturally and X-Wizard will handle the rest.
+   > 🧹 **One more thing:** This chat has been carrying your full onboarding session. Open a fresh chat for best results — Mac: `Cmd+N` / Windows: `Ctrl+N`. A fresh chat loads only your skill, not all of this context.
 
 ---
 
 ### If "Report/deck compilation" or "PDF export" selected:
 
-Ask:
-> "Want to build your first skill right now? Let's make one for your most repeated reporting task."
+Go straight into Q1:
+> "What report or document do you compile most often? What's it called and who receives it?"
 
-If yes, run this interview one question at a time:
+Run this interview one question at a time:
 1. "What report do you compile most often? What's it called and who receives it?"
 2. "Where does the data come from — Excel file, emails, a shared folder, manual input?"
 3. "What does the output look like — a Word doc, PDF, PowerPoint, an email?"
@@ -499,13 +504,25 @@ Then say: "Got it — let me build that."
 3. Skip create-skill's Step 1 — jump directly to Step 2 (Design). Present the design summary and ask for confirmation before writing any files.
 4. After writing skill files, simulate a test run. Do not hand off until the user confirms the output looks right.
 5. Once confirmed, deliver the context bloat note and proceed to Phase 7:
-   > **One more thing:** This chat has been carrying your full onboarding session. Open a fresh chat for best results — Mac: `Cmd+N` / Windows: `Ctrl+N`. A fresh chat loads only your skill, not all of this context. Just describe what you need naturally and X-Wizard will handle the rest.
+   > 🧹 **One more thing:** This chat has been carrying your full onboarding session. Open a fresh chat for best results — Mac: `Cmd+N` / Windows: `Ctrl+N`. A fresh chat loads only your skill, not all of this context.
 
 ---
 
-### If "None of these / something else" selected:
+### If multiple Q4 options were selected:
 
-> "No problem — tell me right now what you'd like to automate and we'll build it here. Or if you'd prefer to explore first, open a new chat anytime and type `/create-skill`."
+When the user selected more than one workflow type, make a concrete recommendation rather than asking an open question. Lead with the most specific and actionable option from their selections (priority order: Excel > email > report/deck > PDF export). Use AskQuestion to confirm:
+
+> "You've got a few things we could automate — should we start with [most specific selected option, e.g. 'one of your Excel files']? Or would you rather begin with [second option]?"
+
+AskQuestion options: one per thing they selected (e.g. "Yes, start with one of my Excel files", "Start with emails instead", "Start with report compilation") plus "Not now — I'll come back to this".
+
+Once they confirm, proceed with the matching workflow path above.
+
+---
+
+### If "Something else" selected:
+
+> "Tell me what you'd like to automate — just describe it in a sentence or two and we'll build it right now."
 
 If the user describes something, run a short free-form interview: where the inputs come from, what the output is, how often they do it. Then:
 1. Use the Read tool to read `.cursor/skills/create-skill/SKILL.md` — announce: "Reading the skill-creation guide now..."
@@ -513,11 +530,13 @@ If the user describes something, run a short free-form interview: where the inpu
 3. Skip create-skill's Step 1 — jump to Step 2 (Design). Confirm before writing files.
 4. Run a test. Do not hand off until the user confirms the output looks right.
 5. Once confirmed, deliver the context bloat note and proceed to Phase 7:
-   > **One more thing:** This chat has been carrying your full onboarding session. Open a fresh chat for best results — Mac: `Cmd+N` / Windows: `Ctrl+N`. A fresh chat loads only your skill, not all of this context. Just describe what you need naturally and X-Wizard will handle the rest.
+   > 🧹 **One more thing:** This chat has been carrying your full onboarding session. Open a fresh chat for best results — Mac: `Cmd+N` / Windows: `Ctrl+N`. A fresh chat loads only your skill, not all of this context.
 
 ---
 
 ### If the user says no / not now:
+
+> "No problem — whenever you're ready, open a new chat and just describe what you want to automate. X-Wizard will take it from there."
 
 Proceed directly to Phase 7 (Handoff).
 
@@ -525,34 +544,15 @@ Proceed directly to Phase 7 (Handoff).
 
 ## Phase 7 — Handoff
 
-> **When this phase runs:** If the user completed Phase 6 with a confirmed working skill, the context bloat note was already delivered at the end of Phase 6 — go directly to the closing message below. If the user skipped skill building ("not now"), this is the first and only closing message they receive.
+> **When this phase runs:** If the user completed Phase 6 with a confirmed working skill, the context bloat note was already delivered — go straight to the closing message below. If the user skipped skill building, this is the only closing they receive.
 
-End with this message (adapt phrasing to AI_LEVEL, but always include these elements):
+End with this message (adapt phrasing to AI_LEVEL):
 
-> "**You're ready, [USER_NAME].**
+> **You're ready, [USER_NAME].**
 >
-> To build your first automation, open a **new chat**:
-> - Mac: **Cmd+N**
-> - Windows: **Ctrl+N**
+> 💬 To build more automations, open a new chat (Mac: **Cmd+N** · Windows: **Ctrl+N**) and just describe what you want to automate — or type `/create-skill` to start directly.
 >
-> Then type: `/create-skill`
->
-> Here's an example of what you might say:
->
-> *'I'm on the BCG X Operations team. Every month I copy data from an Excel sheet into a PowerPoint summary. I want X-Wizard to do that for me automatically.'*
->
-> Cursor will ask you a few questions and build a custom skill for you.
->
-> Want to see how it works first? Watch the demo:
-> → [X-Wizard skill creation — 2-min demo](https://bcg.sharepoint.com/sites/x-wizard/demo)
-> *(link available once the demo video is recorded)*
->
-> ---
->
- > **Want more skills?**
->
-> There are additional out-of-the-box skills available — including PowerPoint creation with full BCG identity, pipeline reporting, and more.
->
-> Reach out to [barbashin.pasha@bcg.com](mailto:barbashin.pasha@bcg.com) to get access to the extended skills library."
+> 🎯 Want more out-of-the-box skills? PowerPoint creation, pipeline reporting, and more are available in the extended library.
+> → [barbashin.pasha@bcg.com](mailto:barbashin.pasha@bcg.com)
 
-**After delivering the handoff message, this skill is complete. Do not respond to further questions in this chat — redirect to opening a new chat (unless Phase 6 skill creation is still in progress, in which case complete it first).**
+**After delivering the handoff message, this skill is complete. Do not respond to further questions in this chat — redirect to a new chat.**
