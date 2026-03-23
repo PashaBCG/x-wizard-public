@@ -322,6 +322,225 @@ SQL rules for `.hyper` files:
 
 `tableauhyperapi`, `requests`, `pyyaml`, `python-dotenv`
 
+### Tableau Discovery Pattern (`--discover`)
+
+The `--discover` flag is the self-scaffolding entry point. It connects to Tableau, downloads all data sources for a workbook, reads their schema, and auto-generates `reference.md` — so the user never has to describe column names manually.
+
+**When to use:** During Phase 7 of the data-advisor flow (after PAT is configured and access is granted), and as a built-in flag in every Tableau-based skill created via create-skill.
+
+**What it does:**
+
+1. Sign in via PAT (same auth as `--refresh`)
+2. Use the Tableau REST API to query the workbook by ID and list its data sources
+3. Download each data source as `.tdsx`, extract the `.hyper` file
+4. Open each `.hyper` with `tableauhyperapi` and read: all table names, all column names with types, and sample values (first 5 rows)
+5. Auto-generate / update `reference.md` with the discovered schema
+6. Print a structured JSON summary for the agent to present to the user
+
+**Discovery script template:**
+
+```python
+#!/usr/bin/env python3
+"""Discover Tableau data sources for a workbook and scaffold the schema reference.
+
+Usage:
+    python3 .cursor/skills/{skill-name}/scripts/query.py --discover
+
+Requires: tableauhyperapi requests pyyaml python-dotenv
+"""
+
+import json
+import os
+import sys
+import zipfile
+from datetime import datetime
+from pathlib import Path
+
+import requests
+import yaml
+import xml.etree.ElementTree as ET
+from dotenv import load_dotenv
+
+
+def discover_workbook_datasources(config, token, site_id):
+    """List all data sources associated with a workbook via the REST API."""
+    server = config["tableau"]["server"]
+    api_version = config["tableau"]["api_version"]
+    workbook_id = config["tableau"].get("workbook_id", "")
+
+    if not workbook_id:
+        sys.exit("ERROR: workbook_id is not set in config.yaml.")
+
+    url = f"{server}/api/{api_version}/sites/{site_id}/workbooks/{workbook_id}"
+    resp = requests.get(url, headers={"X-Tableau-Auth": token}, timeout=30)
+    resp.raise_for_status()
+
+    root = ET.fromstring(resp.text)
+    ns = {"t": "http://tableau.com/api"}
+    workbook_name = root.find(".//t:workbook", ns).attrib.get("name", "Unknown")
+
+    ds_url = f"{server}/api/{api_version}/sites/{site_id}/workbooks/{workbook_id}/connections"
+    ds_resp = requests.get(ds_url, headers={"X-Tableau-Auth": token}, timeout=30)
+    ds_resp.raise_for_status()
+
+    return workbook_name, ds_resp.text
+
+
+def download_and_extract_datasource(config, token, site_id, datasource_id, snapshots_dir):
+    """Download a single data source and extract its .hyper file."""
+    server = config["tableau"]["server"]
+    api_version = config["tableau"]["api_version"]
+
+    url = f"{server}/api/{api_version}/sites/{site_id}/datasources/{datasource_id}/content"
+    resp = requests.get(url, headers={"X-Tableau-Auth": token}, timeout=120)
+    resp.raise_for_status()
+
+    snapshots_dir = Path(snapshots_dir)
+    snapshots_dir.mkdir(parents=True, exist_ok=True)
+
+    temp_tdsx = snapshots_dir / f"{datasource_id}_temp.tdsx"
+    temp_tdsx.write_bytes(resp.content)
+
+    hyper_path = snapshots_dir / f"{datetime.now().strftime('%Y-%m-%d')}_{datasource_id}.hyper"
+    with zipfile.ZipFile(temp_tdsx, "r") as z:
+        hyper_files = [f for f in z.namelist() if f.endswith(".hyper")]
+        if not hyper_files:
+            temp_tdsx.unlink(missing_ok=True)
+            return None
+        z.extract(hyper_files[0], snapshots_dir / "_temp")
+        extracted = snapshots_dir / "_temp" / hyper_files[0]
+        hyper_path.unlink(missing_ok=True)
+        extracted.rename(hyper_path)
+
+    temp_tdsx.unlink(missing_ok=True)
+    import shutil
+    shutil.rmtree(snapshots_dir / "_temp", ignore_errors=True)
+
+    return hyper_path
+
+
+def read_hyper_schema(hyper_path):
+    """Read all tables, columns, types, and sample rows from a .hyper file."""
+    from tableauhyperapi import HyperProcess, Telemetry, Connection
+
+    schema_info = []
+    with HyperProcess(telemetry=Telemetry.DO_NOT_SEND_USAGE_DATA_TO_TABLEAU) as hyper:
+        with Connection(endpoint=hyper.endpoint, database=str(hyper_path)) as conn:
+            catalog = conn.catalog
+            for schema_name in catalog.get_schema_names():
+                for table in catalog.get_table_names(schema=schema_name):
+                    table_def = catalog.get_table_definition(table)
+                    columns = []
+                    for col in table_def.columns:
+                        columns.append({
+                            "name": str(col.name).strip('"'),
+                            "type": str(col.type),
+                        })
+
+                    sample_query = f'SELECT * FROM "{schema_name}"."{table}" LIMIT 5'
+                    try:
+                        rows = conn.execute_list_query(sample_query)
+                        sample = [list(str(v) for v in row) for row in rows]
+                    except Exception:
+                        sample = []
+
+                    schema_info.append({
+                        "schema": str(schema_name),
+                        "table": str(table),
+                        "columns": columns,
+                        "sample_rows": sample,
+                        "row_count_sample": len(sample),
+                    })
+    return schema_info
+
+
+def scaffold_reference_md(skill_dir, workbook_name, datasource_name, schema_info,
+                          server, site, dashboard_url, workbook_url):
+    """Auto-generate reference.md from discovered schema."""
+    ref_path = Path(skill_dir) / "reference.md"
+    lines = [
+        f"# {workbook_name} — Reference\n",
+        "## Data Source\n",
+        f"- **Workbook:** {workbook_name}",
+        f"- **Data source:** {datasource_name}",
+        f"- **Server:** {server}",
+        f"- **Site:** {site}",
+        f"- **Dashboard URL:** {dashboard_url}",
+        f"- **Workbook URL:** {workbook_url}",
+        "",
+        "---\n",
+        "## Column Schema\n",
+    ]
+
+    for table_info in schema_info:
+        lines.append(f"### Table: {table_info['schema']}.{table_info['table']}\n")
+        lines.append("| Column name | Type | Example value |")
+        lines.append("|-------------|------|---------------|")
+        for i, col in enumerate(table_info["columns"]):
+            example = ""
+            if table_info["sample_rows"] and len(table_info["sample_rows"]) > 0:
+                example = table_info["sample_rows"][0][i] if i < len(table_info["sample_rows"][0]) else ""
+            lines.append(f"| {col['name']} | {col['type']} | {example} |")
+        lines.append("")
+
+    lines.extend([
+        "---\n",
+        "## Staleness Policy\n",
+        "- Snapshot refreshed automatically if older than 48 hours (configurable in `config.yaml`)",
+        "- Force refresh: `python3 .cursor/skills/{skill-name}/scripts/query.py --refresh`",
+        "- Re-discover schema: `python3 .cursor/skills/{skill-name}/scripts/query.py --discover`",
+        "",
+    ])
+
+    ref_path.write_text("\n".join(lines), encoding="utf-8")
+    return str(ref_path)
+
+
+def run_discover(config):
+    """Full discovery flow: sign in, find data sources, download, read schema, scaffold."""
+    from dotenv import load_dotenv
+    env_path = Path(config.get("_workspace_root", ".")) / ".env.local"
+    load_dotenv(env_path)
+
+    token_name = os.environ.get("TABLEAU_TOKEN_NAME", "")
+    token_secret = os.environ.get("TABLEAU_TOKEN_SECRET", "")
+    if not token_name or not token_secret or token_secret == "PASTE_YOUR_TOKEN_SECRET_HERE":
+        sys.exit("ERROR: Tableau credentials not configured. Fill in .env.local first.")
+
+    # Sign in (reuse the standard auth function from the Tableau pattern)
+    # ... (use tableau_sign_in from the main script)
+
+    # Then call discover_workbook_datasources, download, read schema, scaffold
+    # Output structured JSON for the agent
+    pass
+```
+
+**Output format** — the `--discover` flag prints a JSON block that the agent parses:
+
+```json
+{
+  "workbook_name": "Moonshot Dashboard",
+  "datasource_name": "Tableau Data 5x Extract",
+  "server": "https://tableauha.bcg.com",
+  "site": "ProductAnalytics",
+  "tables": [
+    {
+      "schema": "Extract",
+      "table": "Extract",
+      "columns": [
+        {"name": "Period", "type": "TEXT"},
+        {"name": "Revenue_Actual", "type": "DOUBLE"}
+      ],
+      "sample_rows": [["2025-12", "4500000.0"]]
+    }
+  ],
+  "reference_md_path": ".cursor/skills/{skill-name}/reference.md",
+  "snapshot_path": "x-wizard/{skill-name}/data/snapshots/2026-03-23_abc123.hyper"
+}
+```
+
+The agent reads this output, presents the schema to the user in plain English, asks interpretation questions, and passes everything to create-skill.
+
 ---
 
 ## Snowflake Pattern
@@ -439,6 +658,7 @@ Every data skill should support these CLI flags in its `query.py`:
 
 | Flag | Action |
 |------|--------|
+| `--discover` | Connect to source, download data, read schema, and auto-scaffold `reference.md` |
 | `--tables` | List available tables |
 | `--columns` | Show all columns with types |
 | `--snapshots` | List available snapshots with dates |

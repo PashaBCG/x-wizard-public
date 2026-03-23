@@ -1,6 +1,6 @@
 ---
 name: data-advisor
-description: Single data onboarding guide for Excel, Tableau, and Snowflake. Educates non-technical users on file handling, data conversion, access requests, credential setup, and hands off to /create-skill. Use when the user mentions excel, xlsx, spreadsheet, workbook, tableau, snowflake, dashboard, dataset, data source, metrics, reporting data, client view, live data, or asks how to connect to their data.
+description: Single data onboarding guide for Excel, Tableau, and Snowflake. Educates non-technical users on file handling, data conversion, access requests, credential setup, and hands off to /create-skill. Use when the user mentions excel, xlsx, spreadsheet, workbook, tableau, snowflake, dashboard, dataset, data source, metrics, reporting data, client view, live data, automate dashboard, automate reporting, connect to my data, set up Tableau, set up Snowflake, daily numbers, pull my metrics, or asks how to connect to their data. This skill takes priority over create-skill when the data source is not yet connected.
 ---
 
 # Data Advisor
@@ -158,35 +158,52 @@ Read `.cursor/skills/create-skill/SKILL.md` and launch the skill creation flow *
 
 ---
 
-## Phase 4 — Find the Admin and What to Ask
+## Phase 4 — Guided Discovery
 
 *This phase is for Tableau and Snowflake only.*
 
-### Finding the data owner
+The goal is to collect every piece of information needed — with certainty — by guiding the user click-by-click. Do NOT ask whether the user knows something; instead, walk them through finding it.
 
-**Tableau:**
-> "Open the dashboard in your browser. Look at the top for the workbook name, then look for a 'Data Sources' tab — the owner is listed there. If you can't find it, your team lead or the person who built the dashboard will know."
+### Tableau — step-by-step
 
-**Snowflake:**
+Present these steps **one at a time**, waiting for the user's response before moving on.
+
+**Step 1 — Dashboard URL:**
+> "Open the Tableau dashboard you usually look at — the one you want to automate. Send me the URL from your browser's address bar."
+
+Store this as `DASHBOARD_URL`. This is for reference only (it shows the view the user sees).
+
+**Step 2 — Navigate to Data Sources:**
+> "Now look at the top-right area of the page — the same row where you see your user picture / avatar. Click **Data Sources**."
+
+**Step 3 — Open Details:**
+> "In the panel that opens, click **Details**."
+
+**Step 4 — Identify the owner:**
+> "You should now see the workbook page. Near the workbook name there's an **Owner** — who is listed there? (e.g., `john.smith@email.com`)"
+
+Store as `OWNER_EMAIL`.
+
+**Step 5 — Workbook URL and names:**
+> "Send me the URL you're on now (it should look like `tableau.company.com/#/site/Analytics/workbooks/111/datasources`).
+> Also tell me: what is the **workbook name** shown at the top, and the **data source name** listed on the page?"
+
+Store as `WORKBOOK_URL`. From this URL, parse automatically:
+- **Server URL** — everything before `/#/` (e.g., `https://tableauha.bcg.com`)
+- **Site name** — the segment after `/site/` (e.g., `ProductAnalytics`)
+- **Workbook ID** — the numeric segment after `/workbooks/` (e.g., `8976`)
+
+Store the user-provided names as `WORKBOOK_NAME` and `DATASOURCE_NAME`.
+
+**Summary:** After these five steps you have: `DASHBOARD_URL`, `WORKBOOK_URL`, server, site, workbook ID, `WORKBOOK_NAME`, `DATASOURCE_NAME`, and `OWNER_EMAIL`. All collected with certainty — no guesswork.
+
+### Snowflake
+
 > "Ask your team's data or analytics contact who manages the Snowflake account your reports use. If you're not sure who that is, ask your team lead — they'll know or can point you to the right person."
 
-### What to request — checklist
-
-Present this checklist to the user so they know exactly what to ask for. Tell them to copy or screenshot it.
-
-**Tableau — ask the data source owner for:**
-
-- [ ] Read and download access to the **published data source** (not the workbook — the underlying data). Download is needed to cache the data locally for querying.
-- [ ] The **Tableau server URL** (e.g., `https://tableau.yourcompany.com`)
-- [ ] The **site name** (visible in the URL after `/site/`)
-- [ ] The **data source ID** (from the URL when viewing the data source page, or the admin can share it)
-
-**Snowflake — ask the database admin for:**
-
-- [ ] A **read-only user account** or service account
-- [ ] The **account identifier** (e.g., `abc12345.us-east-1`)
-- [ ] The **warehouse name** to use for queries
-- [ ] The **database and schema names** where the data lives
+Ask the user for:
+- Owner / admin name and email
+- The name of the database or schema they use
 
 ---
 
@@ -194,66 +211,80 @@ Present this checklist to the user so they know exactly what to ask for. Tell th
 
 *This phase is for Tableau and Snowflake only.*
 
-Read `.cursor/skills/outlook-draft/SKILL.md` and use it to compose a professional email to the data owner.
+Read `.cursor/skills/outlook-draft/SKILL.md` and use it to compose a short, direct email to the data owner.
 
-The email should include:
+### Tableau email
 
-**Subject:** "Request: Read & download access to [dataset name] for automated reporting"
+**Subject:** `Tableau access`
 
-**Body structure:**
+**Body — keep it short:**
 
-1. **Who you are and what you need** — one sentence intro referencing the user's name and role from `project.mdc`
+1. One-sentence intro: who you are (name + role from `project.mdc`) and what you need.
+2. The ask — direct and specific:
+   > "Could you give me read and download access to **[DATASOURCE_NAME]** that feeds the **[WORKBOOK_NAME]** dashboard? Here are the links for reference:
+   > - Dashboard: [DASHBOARD_URL]
+   > - Workbook / data source: [WORKBOOK_URL]"
+3. Brief context (1–2 sentences max):
+   > "I'm automating the manual lookups I already do in the browser. The access is read + download only — nothing can be modified. The data stays cached locally on my laptop."
+4. Closing: "Happy to jump on a quick call if easier. Thanks!"
 
-2. **Three persuasion points:**
-   - "I'm requesting read and download access to data your team already refreshes. This adds zero work to your pipeline — I just need to cache a local copy for automated lookups."
-   - "I already have dashboard access to view this data. Download access lets me cache it locally and automate the same lookups I do manually today."
-   - "The access is read and download only — no write capability. The data cannot be modified or corrupted. My cached copy stays on my laptop and is never re-uploaded anywhere."
+**Do NOT include:**
+- Numbered checklists of items to provide back (we already have server, site, workbook ID from the URLs)
+- Lengthy persuasion paragraphs
+- Technical jargon about APIs or PATs
 
-3. **Specific ask** — the checklist items from Phase 4, written as a numbered list of what the recipient needs to provide or enable
+### Snowflake email
 
-4. **Closing** — offer to discuss on a quick call if easier
+**Subject:** `Snowflake read access`
+
+**Body:** Same short structure — who you are, what database/schema you need read-only access to, one line on why it's safe, closing.
 
 After drafting, tell the user:
-> "I've drafted the email for you. Review it, send it when ready, and come back to this conversation once you have the access details. We'll pick up right where we left off."
+> "I've drafted the email for you. Review it, send it when ready. In the meantime, let's set up your login credentials — we can do that right now while we wait for the access."
 
 ---
 
 ## Phase 6 — Configure Credentials
 
-*When the user returns with access granted.*
+*Run this in parallel with the access request — don't wait for the owner to respond.*
 
-### Step 1 — Explain secrets and .gitignore
+### Step 1 — Create .env.local and explain
 
-**MANDATORY** — always explain this before creating any credential files.
+Create `.env.local` at the workspace root with placeholder values (see Tableau or Snowflake template below). Then explain:
 
 **For L1-L2:**
-> "Before we save your credentials, let me explain how this stays secure.
->
-> Your passwords and tokens will go into a file called `.env.local` — think of it as a private sticky note on your laptop. This file is listed in something called `.gitignore`, which is a simple rule that tells the system: **never upload this file anywhere.** It stays on your machine only — it won't appear on GitHub, in shared folders, or anywhere else. Even if you sync or share the rest of your project, `.env.local` is automatically excluded.
->
-> In short: your credentials live only on your laptop, and there's a built-in safety net that prevents them from accidentally leaking."
+> "I've created a file called `.env.local` in your project folder. Think of it as a private sticky note on your laptop — it holds your login credentials. It's protected by a built-in safety rule (`.gitignore`) that prevents it from ever being uploaded or shared anywhere. Your credentials stay on your machine only."
 
 **For L3+:**
-> "Credentials go in `.env.local` at the workspace root. It's already in `.gitignore` — never committed, never pushed. Local to your machine only."
+> "Created `.env.local` at the workspace root. It's in `.gitignore` — never committed, never pushed."
 
-Then read `.gitignore` and show the user the relevant lines so they can see the safety net with their own eyes.
+Read `.gitignore` and confirm `.env.local` is listed. Mention this to the user briefly.
 
-### Step 2 — Create the credentials file
+### Step 2 — Tableau: PAT creation walkthrough
 
-**Tableau:**
+Guide the user through creating a Personal Access Token, **one step at a time:**
 
-First, guide PAT creation:
-> "Go to your Tableau profile (click your avatar in the top-right corner) → Settings → Personal Access Tokens. Create a new token and name it `x-wizard-api`. Copy both the token name and the token secret — you'll need them in the next step."
+> 1. Open Tableau in your browser — any dashboard or workbook page is fine.
+> 2. Click on your **user avatar** (top-right corner of the page).
+> 3. Click **My Account Settings**.
+> 4. Scroll down the page until you see **Personal Access Tokens**.
+> 5. In the **Token Name** field, type: `x-wizard-api`
+> 6. Click **Create token**.
+> 7. **Important — copy the Secret immediately.** It's only shown once. Paste it into `.env.local` on the line `TABLEAU_TOKEN_SECRET="..."` (replace the placeholder).
+> 8. Copy the **Token Name** value and paste it into `.env.local` on the line `TABLEAU_TOKEN_NAME="..."`.
 
-Then create `.env.local` at the workspace root:
+Tableau `.env.local` template:
 ```
 TABLEAU_TOKEN_NAME="x-wizard-api"
-TABLEAU_TOKEN_SECRET="paste-your-token-secret-here"
+TABLEAU_TOKEN_SECRET="PASTE_YOUR_TOKEN_SECRET_HERE"
 ```
 
-**Snowflake:**
+After the user confirms both values are pasted, say:
+> "Your credentials are saved and protected. Once the owner grants download access, we're ready to connect."
 
-Create `.env.local` at the workspace root:
+### Step 2 — Snowflake: credential entry
+
+Ask the user for each credential value and populate `.env.local`:
 ```
 SNOWFLAKE_ACCOUNT="your-account-id"
 SNOWFLAKE_USER="your-username"
@@ -265,25 +296,54 @@ SNOWFLAKE_SCHEMA="your-schema"
 
 ### Step 3 — Verify
 
-Read `.gitignore` and confirm `.env.local` is listed. Show the user the line. Then say:
+Read `.gitignore` and confirm `.env.local` is listed. Then:
 
-**For L1-L2:**
-> "Your credentials are saved and protected. The `.gitignore` file confirms that `.env.local` will never be uploaded anywhere. You're all set."
-
-**For L3+:**
-> "`.env.local` created and confirmed in `.gitignore`. Credentials are local-only."
+> "Credentials saved. `.gitignore` confirms `.env.local` will never be uploaded. You're all set."
 
 ---
 
-## Phase 7 — Handoff to /create-skill
+## Phase 7 — Discovery and Handoff to /create-skill
+
+*Once the user has credentials configured (Phase 6) and access granted (Phase 5 response received).*
+
+### Step 1 — Auto-discover the data
+
+Tell the user:
+> "Let me connect to Tableau and see what data is available."
+
+Build and run the discovery script (see [reference.md](reference.md) — "Tableau Discovery Pattern") with the `--discover` flag. The script:
+
+1. Signs in via PAT
+2. Queries the Tableau REST API using the workbook ID to list data sources
+3. Downloads each data source as `.tdsx`, extracts the `.hyper` file
+4. Opens the `.hyper` with `tableauhyperapi` and reads all tables, columns, types, and sample rows
+5. Outputs a JSON summary of the discovered schema
+
+### Step 2 — Scaffold reference.md
+
+Use the discovery output to auto-populate the skill's `reference.md` with:
+- Table names
+- Column name, type, and example values (first 5 rows)
+- Data source metadata (server, site, workbook, datasource name)
+
+### Step 3 — Ask interpretation questions
+
+Present the discovered schema to the user in plain English and ask:
+> "Here's what I found in the data: [list of column names with sample values]. Can you tell me:
+> 1. What do these columns mean in your day-to-day work?
+> 2. Which ones are the key metrics you care about?
+> 3. What questions do you typically answer with this data?"
+
+### Step 4 — Hand off to create-skill
 
 Tell the user:
 > "Your data connection is ready. Now let's build a skill so you can query this data anytime by just asking in plain English."
 
 Read `.cursor/skills/create-skill/SKILL.md` and launch the skill creation flow **in this same chat**, pre-loading:
 - The platform (Tableau or Snowflake)
-- The dataset description from Phase 2
-- The questions the user said they answer with this data
-- A pointer to [reference.md](reference.md) for architecture patterns
+- All discovered metadata: server, site, workbook ID, workbook name, datasource name, `DASHBOARD_URL`, `WORKBOOK_URL`
+- The full column schema with types and sample values from discovery
+- The user's interpretation of the data and their key questions from Step 3
+- A pointer to [reference.md](reference.md) for architecture patterns and the `--discover` code template
 
 **This skill is complete after the handoff. The create-skill flow takes over.**
