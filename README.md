@@ -1,4 +1,13 @@
-# X-Wizard
+# X-Wizard: Scaffolding AI Automations
+
+```
+██╗  ██╗      ██╗    ██╗██╗███████╗ █████╗ ██████╗ ██████╗
+╚██╗██╔╝      ██║    ██║██║╚════██║██╔══██╗██╔══██╗██╔══██╗
+ ╚███╔╝ █████╗██║ █╗ ██║██║    ██╔╝███████║██████╔╝██║  ██║
+ ██╔██╗ ╚════╝██║███╗██║██║   ██╔╝ ██╔══██║██╔══██╗██║  ██║
+██╔╝ ██╗      ╚███╔███╔╝██║███████╗██║  ██║██║  ██║██████╔╝
+╚═╝  ╚═╝       ╚══╝╚══╝ ╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝
+```
 
 An AI-powered automation assistant for BCG — built on Cursor. Ask questions in plain English, draft emails, generate PDFs, and build custom automations. No coding required.
 
