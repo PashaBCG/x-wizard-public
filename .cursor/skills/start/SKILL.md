@@ -46,12 +46,13 @@ Open with this message verbatim:
 
 I'm your setup guide. I'll get you ready in about 5 minutes — no technical knowledge needed. Just answer a few questions and I'll handle the rest.
 
-X-Wizard turns Cursor into a personal automation assistant. Once set up, you can:
-– Talk to your Excels/Tableau datasets in plain English
-– Create PDF/XLSX from your outputs (PPTX too, but you need to ask Pasha for this skill)
+X-Wizard is scaffolding for building AI automations. You describe a task you repeat — X-Wizard interviews you, designs the automation, and builds it. From then on, your AI agent knows how to do it. No coding required.
+
+It ships with a few starter skills out of the box:
 - Draft and send emails in plain English — with your signature auto-applied
-- Export any document to a BCG-branded PDF with one command
-- Build custom automations for tasks you repeat every week — no code required
+- Export documents to a styled PDF with one command
+- Talk to your Excel / Tableau / Snowflake data in plain English
+- Build custom automations for any task you repeat
 
 Let's get you configured.
 
