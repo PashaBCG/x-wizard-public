@@ -31,6 +31,18 @@ def check_os() -> str:
     return os_name
 
 
+def check_git() -> tuple[bool, str]:
+    try:
+        result = subprocess.run(
+            ["git", "--version"],
+            capture_output=True, text=True, check=True,
+        )
+        version = result.stdout.strip().replace("git version ", "")
+        return True, version
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return False, "not found"
+
+
 def check_python() -> tuple[bool, str]:
     version = sys.version_info
     label = f"{version.major}.{version.minor}.{version.micro}"
@@ -76,6 +88,12 @@ def main() -> int:
 
     os_name = check_os()
     print(f"\n  System:  {os_name} ({platform.version()[:40]})")
+
+    git_ok, git_label = check_git()
+    if git_ok:
+        print(f"  Git:     {GREEN}✓ {git_label}{RESET}")
+    else:
+        print(f"  Git:     {YELLOW}✗ {git_label} (run bootstrap script to install){RESET}")
 
     py_ok, py_label = check_python()
     if py_ok:

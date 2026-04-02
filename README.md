@@ -31,17 +31,15 @@ Ships with a few useful skills out of the box — but the real point is building
 ## Quickstart with Cursor
 
 1. [Install Cursor](https://cursor.com) and open it
-2. On the welcome screen, click **Clone Git Repository**
-3. Paste: `https://github.com/PashaBCG/x-wizard-public`
-4. Choose a save location → Clone
-5. Open the cloned folder in Cursor
-6. Open the chat (Cmd+L on Mac / Ctrl+L on Windows) and type:
+2. **[Download the ZIP](https://github.com/PashaBCG/x-wizard-public/archive/refs/heads/main.zip)** and extract it (or clone: `https://github.com/PashaBCG/x-wizard-public`)
+3. In Cursor: **File → Open Folder** → select the extracted folder
+4. Open the chat (Cmd+L on Mac / Ctrl+L on Windows) and type:
 
 ```
 /start
 ```
 
-The setup wizard handles everything from there.
+The setup wizard handles everything from there — including installing Git, Python, and all other dependencies automatically.
 
 ---
 

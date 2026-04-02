@@ -165,9 +165,58 @@ Confirm to the user: "Got it, [USER_NAME] — your workspace is configured."
 
 ---
 
-## Phase 3 — Auto OS Detection + Python Check + Package Install
+## Phase 3 — Prerequisites + System Setup
 
-Tell the user: "Now I'll check your system and install the required packages."
+Tell the user: "Now I'll check your system and install the required tools."
+
+**Step 3-pre — Prerequisites bootstrap (Git + Python):**
+
+This step ensures Git and Python are installed before anything else. Cursor depends on Git to function properly.
+
+Tell the user: "I'll check if your system has the required tools and install anything missing. Click **Accept** when Cursor asks."
+
+Detect the OS and run the appropriate bootstrap script:
+
+- **Mac:**
+  ```bash
+  bash .cursor/skills/start/scripts/bootstrap-mac.sh
+  ```
+
+- **Windows:**
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File .cursor/skills/start/scripts/bootstrap-win.ps1
+  ```
+
+**Interpret the result:**
+
+- Exit code 0, output says "All prerequisites already present": move on silently to Step 3a.
+- Exit code 0, output says "Prerequisites installed successfully" + "RESTART CURSOR": tell the user: "Tools installed successfully. Please **restart Cursor** now (Mac: Cmd+Q / Windows: Alt+F4, then reopen), then type `/start` again. I'll pick up where we left off." **Stop here — do not continue until the user restarts and re-runs /start.**
+- Exit code 1 (something failed): read the script output for which tool failed and the manual instructions printed. Relay those to the user in plain English. Wait for confirmation, then re-run the bootstrap script.
+
+**If the bootstrap script itself cannot execute** (e.g., shell permissions block `.sh`), run the fallback commands one at a time directly in the terminal:
+
+**Mac — Git fallbacks (try in order until one works):**
+1. `xcode-select --install` — tell user to click Install in the macOS popup
+2. `brew install git` — only if `brew` is available
+3. `command -v brew || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && brew install git`
+
+**Mac — Python fallbacks:**
+1. Xcode CLT (installed above) usually provides `python3` — check with `python3 --version`
+2. `brew install python`
+
+**Windows — Git fallbacks (try in order until one works):**
+1. `winget install --id Git.Git -e --source winget --accept-package-agreements --accept-source-agreements`
+2. `choco install git -y`
+3. Direct download: `$f="$env:TEMP\git-installer.exe"; Invoke-WebRequest -Uri ((Invoke-RestMethod 'https://api.github.com/repos/git-for-windows/git/releases/latest').assets | Where-Object { $_.name -match '64-bit\.exe$' } | Select-Object -First 1).browser_download_url -OutFile $f; Start-Process $f -ArgumentList '/VERYSILENT /NORESTART /NOCANCEL /SP- /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS' -Wait; Remove-Item $f`
+
+**Windows — Python fallbacks:**
+1. `winget install --id Python.Python.3.13 -e --source winget --accept-package-agreements --accept-source-agreements`
+2. Open Microsoft Store: `Start-Process "ms-windows-store://pdp/?ProductId=9PNRBTZXMB4Z"` — tell user to click Get
+3. Direct download: `$f="$env:TEMP\python-installer.exe"; Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.13.2/python-3.13.2-amd64.exe" -OutFile $f; Start-Process $f -ArgumentList '/quiet InstallAllUsers=0 PrependPath=1' -Wait; Remove-Item $f`
+
+After any successful Git or Python install via fallback, always verify with `git --version` / `python3 --version` (Mac) or `python --version` (Windows), then instruct the user to **restart Cursor**.
+
+---
 
 **Step 3a — Run the setup script:**
 
